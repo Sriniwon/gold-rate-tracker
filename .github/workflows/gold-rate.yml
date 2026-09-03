@@ -1,0 +1,36 @@
+name: Gold Rate Tracker
+
+on:
+  schedule:
+    # Runs every 10 minutes (GitHub uses UTC time internally, IST doesn't matter here
+    # since this just controls frequency, not a specific clock time)
+    - cron: "*/10 * * * *"
+  workflow_dispatch:  # lets you manually trigger a run from the Actions tab
+
+jobs:
+  fetch-and-notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Set up ChromeDriver
+        uses: nanasess/setup-chromedriver@v2
+
+      - name: Run gold rate tracker
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python gold_tracker.py
